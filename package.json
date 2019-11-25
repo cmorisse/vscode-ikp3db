@@ -1,0 +1,190 @@
+{
+	"name": "ikp3db",
+	"displayName": "ikp3db",
+	"description": "InouK Python 3 DeBugger",
+	"version": "0.0.1",
+	"publisher": "cmorisse",
+	"engines": {
+		"vscode": "^1.39.2",
+		"node": "^10.15.1"
+	},
+	"categories": [
+		"Debuggers"
+	],
+	"dependencies": {
+		"vscode-debugadapter": "1.37.0",
+		"vscode-debugprotocol": "1.37.0",
+		"vscode-nls": "2.0.2"
+	},
+	"disabled_devDependencies": {
+		"@types/vscode": "^1.39"
+	},
+	"devDependencies": {
+		"@types/node": "12.11.5",
+		"@types/mocha": "5.2.7",
+		"typescript": "3.5.3",
+		"vscode": "1.1.36",
+		"mocha": "6.2.0",
+		"vscode-debugadapter-testsupport": "1.37.0",
+		"tslint": "5.18.0",
+		"vsce": "1.69.0",
+		"vscode-nls-dev": "3.3.1"
+	},
+	"activationEvents": [
+		"onDebug"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/cmorisse/vscode-ikp3db.git"
+	},
+	"bugs": {
+		"url": "https://github.com/cmorisse/vscode-ikp3db/issues"
+	},
+	"main": "./out/src/extension.js",
+	"scripts": {
+		"prepublish": "tsc -p ./src",
+		"compile": "tsc -p ./src",
+		"tslint": "tslint ./src/**/*.ts",
+		"watch": "tsc -w -p ./src",
+		"test": "mocha -u tdd ./out/tests/",
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"package": "vsce package",
+		"publish": "vsce publish"
+	},
+	"icon": "images/icon.png",
+	"license": "MIT",
+	"contributes": {
+		"breakpoints": [
+			{
+				"language": "python"
+			}
+		],
+		"debuggers": [
+			{
+				"type": "ikp3db",
+				"label": "IKp3db Python Debugger",
+				"program": "./out/src/debugAdapter.js",
+				"runtime": "node",
+				"languages": [
+					"python"
+				],
+				"variables": {},
+				"initialConfigurations": [
+					{
+						"type": "ikp3db",
+						"request": "launch",
+						"name": "Launch (Ikp3db)",
+						"program": "${file}",
+						"cwd": "${workspaceFolder}",
+						"pythonPath": "${config:python.pythonPath}"
+					}
+				],
+				"configurationSnippets": [
+					{
+						"label": "ikp3db: Launch",
+						"description": "A new configuration for launching a Python3 program to be debugged with ikp3db",
+						"body": {
+							"type": "ikp3db",
+							"request": "launch",
+							"name": "Launch (Ikp3db)",
+							"program": "^\"\\${file}\"",
+							"cwd": "^\"\\${workspaceFolder}\"",
+							"pythonPath": "^\"\\${config:python.pythonPath}\""
+						}
+					}
+				],
+				"configurationAttributes": {
+					"launch": {
+						"required": [
+							"program",
+							"pythonPath",
+							"cwd"
+						],
+						"properties": {
+							"program": {
+								"type": "string",
+								"description": "Python program file.",
+								"default": "${file}"
+							},
+							"cwd": {
+								"type": "string",
+								"description": "working directory.",
+								"default": "${workspaceFolder}"
+							},
+							"ikp3dbArgs": {
+								"type": "array",
+								"description": "ikp3db command line arguments.",
+								"default": []
+							},
+							"args": {
+								"type": "array",
+								"description": "Command line arguments.",
+								"default": []
+							},
+							"stopOnEntry": {
+								"type": "boolean",
+								"description": "Automatically stop after launch.",
+								"default": true
+							},
+							"pythonPath": {
+								"type": "string",
+								"description": "Path (fully qualified) to python executable. Defaults to the value in settings.json",
+								"default": "${config:python.pythonPath}"
+							},
+							"port": {
+								"type": "number",
+								"description": "Debug port (default is 15471, ikp3db default port.",
+								"default": 0
+							},
+							"console": {
+								"enum": [
+									"internalConsole",
+									"integratedTerminal",
+									"externalTerminal"
+								],
+								"description": "Not Available: Where to launch the debug target: internal console, integrated terminal, or external terminal.",
+								"default": "integratedTerminal"
+							},
+							"host": {
+								"type": "string",
+								"description": "IP address of the of the local debug server (default is 'localhost').",
+								"default": "localhost"
+							}
+						}
+					},
+					"attach": {
+						"required": [
+							"host",
+							"port"
+						],
+						"properties": {
+							"host": {
+								"type": "string",
+								"description": "host name.",
+								"default": "localhost"
+							},
+							"port": {
+								"type": "number",
+								"description": "port",
+								"default": 15471
+							},
+							"sourceRoot": {
+								"type": [
+									"string",
+									"array"
+								],
+								"description": "script source root directory.",
+								"default": "${workspaceFolder}"
+							},
+							"stopOnEntry": {
+								"type": "boolean",
+								"description": "Automatically stop after launch.",
+								"default": true
+							}
+						}
+					}
+				}
+			}
+		]
+	}
+}
