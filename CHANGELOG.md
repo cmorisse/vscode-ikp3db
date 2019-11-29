@@ -1,6 +1,6 @@
 # Changes Log
 
-## [0.0.3] - 2019-11-24
+## [0.0.3] - 2019-11-29
 
 * FIX:  debugged program does not always exit when debugger is stopped.
 
