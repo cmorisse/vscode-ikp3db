@@ -734,16 +734,14 @@ export class Ikp3dbDebugSession extends DebugSession {
 
 	protected disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments): void {
 		if (this._debug_server_process) {
-			this._debug_server_process.kill();
-			// TODO: check if required
-			this._debug_server_process.kill();
+			this._debug_server_process.kill('SIGKILL');
 			delete this._debug_server_process;
+			if (this._debug_client) {
+				this._debug_client.end();
+				delete this._debug_client;
+			}
+			this.sendResponse(response);
 		}
-		if (this._debug_client) {
-			this._debug_client.end();
-			delete this._debug_client;
-		}
-		this.sendResponse(response);
 	}
 
 	protected evaluateRequest(response: DebugProtocol.EvaluateResponse, args: DebugProtocol.EvaluateArguments): void {
