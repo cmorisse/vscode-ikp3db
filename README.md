@@ -72,9 +72,11 @@ IK3db version 1.5 or above must be available in PYTHONPATH (or current
 virtualenv).<br/>To install:
 
     # Preferably in a virtualenv
-    pip install -i https://test.pypi.org/simple ikp3db==1.5.dev002
+    pip install -i https://test.pypi.org/simple ikp3db==1.5.dev003
 
 Note: ikp3db 1.5 will be hosted on `test pypi` as long as it is under development.
+
+Check: https://test.pypi.org/project/ikp3db/#history to select the latest 1.5 pre-release.
 
 ## Extension Settings / Debugger configuration
 
