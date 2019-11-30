@@ -1,5 +1,12 @@
 # Changes Log
 
+## [0.0.3] - 2019-11-29
+
+* FIX:  debugged program does not always exit when debugger is stopped.
+
+[0.0.3]: https://github.com/cmorisse/vscode-ikp3db/compare/v0.0.2...v0.0.3
+
+
 ## [0.0.2] - 2019-11-24
 
 * DOC
