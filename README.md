@@ -17,10 +17,15 @@ While this is a preliminary version, it is stable enough to be used daily.
 * Watch window
 * Evaluate Expressions
 * Local Debugging (compatible with VS Code `Remote Development - Remote SSH`)
+* Multi-threaded debugging (see [documentation](documentation/multi_threaded.md))
 
 ## Features availables in the debugger but not yet in this extension
 
 * Remote (docker) debugging over TCP
+
+## Features not available
+
+* Multi Process debugging (not **yet** available).
 
 ## Why this extension ????
 
