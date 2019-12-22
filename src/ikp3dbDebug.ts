@@ -1,11 +1,11 @@
 'use strict';
 
+import { DebugProtocol } from 'vscode-debugprotocol';
 import {
 	DebugSession,
 	InitializedEvent, TerminatedEvent, ContinuedEvent, StoppedEvent, BreakpointEvent, OutputEvent, Event,
 	Thread, StackFrame, Scope, Source, Handles, Breakpoint
 } from 'vscode-debugadapter';
-import { DebugProtocol } from 'vscode-debugprotocol';
 import { readFileSync, existsSync } from 'fs';
 import { fork, spawn, ChildProcess } from 'child_process';
 import * as net from 'net';
@@ -776,11 +776,15 @@ export class Ikp3dbDebugSession extends DebugSession {
 		} else if (event.command == "programBreak") {
 			if(event.exception) {
 				let excEvt = new StoppedEvent(
-					"exception", 
-					event.thread_ident, 
-					event.exception.type
-				)
-				excEvt.body.reason = event.exception.info
+					"exception", //reason
+					event.thread_ident,  
+					"Type    : \""+event.exception.type+"\"\nMessage : "+event.exception.info  //exceptionText
+				);
+				/**
+				 * next are unused:
+					(<DebugProtocol.StoppedEvent>excEvt).body.allThreadsStopped = false;
+					(<DebugProtocol.StoppedEvent>excEvt).body.description = "cyril body description";
+				 */
 				this.sendEvent(excEvt);
 			} else
 				this.sendEvent(new StoppedEvent("breakpoint", event.thread_ident));
