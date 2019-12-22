@@ -5,7 +5,7 @@
 * FIX: vscode "red message box" does not appear when debugger is stopped (breakpoint or exception)
 * FIX: Variables names and value no longer display in debugger VARIABLES pane.
 
-[0.0.4]: https://github.com/cmorisse/vscode-ikp3db/compare/v0.0.4...v0.0.5
+[0.0.5]: https://github.com/cmorisse/vscode-ikp3db/compare/v0.0.4...v0.0.5
 
 
 ## [0.0.4] - 2019-11-30
