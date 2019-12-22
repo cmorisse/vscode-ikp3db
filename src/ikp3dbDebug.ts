@@ -609,7 +609,7 @@ export class Ikp3dbDebugSession extends DebugSession {
 		let variables = [];
 		for(let a_var of variablesData) {
 			const typeName = a_var['type'].split(' ')[0]
-			let varRef=null;
+			let varRef=0; /** If variablesReference is > 0, the variable is structured and its children can be retrieved by passing variablesReference to the VariablesRequest. */
 			if(a_var.children_count) {
 				varRef = this._variablesHandles.create(
 					new Ikp3dbVariablesReference(
@@ -625,7 +625,7 @@ export class Ikp3dbDebugSession extends DebugSession {
 				name: a_var.name,
 				type: typeName,
 				value: a_var.value,
-				variablesReference: varRef
+				variablesReference: varRef 
 			});
 		}
 		response.body = {
