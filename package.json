@@ -116,6 +116,16 @@
 								"description": "ikp3db command line arguments.",
 								"default": []
 							},
+							"spawnCommand": {
+								"type": "array",
+								"description": "Allow to explicitly define the command used to launch the debuggee. spawnCommand is an array of string joined with ' ' to be passed as child_process.spawn() 'command' argument. Note that when `spawnCommand' is defined, all other parameters (`program`, `ikp3dbArgs`, `args`, ...) appart from spawnOptions, are ignored.",
+								"default": []
+							},
+							"spawnOptions": {
+								"type": "object",
+								"description": "Optional `options` object passed to child_process.spawn() when spawnCommand is used. Note that spawnOptions[\"shell\"] = true is forced by the plugin.",
+								"default": []
+							},
 							"args": {
 								"type": "array",
 								"description": "Command line arguments.",

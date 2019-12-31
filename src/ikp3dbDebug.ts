@@ -15,10 +15,11 @@ import * as path from 'path';
 const IKPDB_MAGIC_CODE: string = "LLADpcdtbdpac";
 
 export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArguments {
-
 	program: string;
 	args: string[];
 	ikp3dbArgs: string[];
+	spawnCommand: string[];
+	spawnOptions: object;
 	cwd: string;
 	host: string;
 	port: number;
@@ -30,8 +31,8 @@ export interface LaunchRequestArguments extends DebugProtocol.LaunchRequestArgum
 export interface AttachRequestArguments extends DebugProtocol.AttachRequestArguments {
 	host: string;
 	port: number;
+	cwd: string;
 	sourceRoot: string | string[];
-
 	stopOnEntry?: boolean;
 }
 
@@ -132,7 +133,7 @@ class Ikp3dbBTCPClient {
 
 		var retryCount = 0;
 		this._connection.on('error', (e: any) => {
-			if (e.code == 'ECONNREFUSED' && retryCount < 10) {
+			if (e.code == 'ECONNREFUSED' && retryCount < 20) {
 				console.warn("Ikp3dbClient failed to connect: "+e.message);
 				retryCount++;
 				setTimeout(() => {
@@ -335,18 +336,37 @@ export class Ikp3dbDebugSession extends DebugSession {
 		const dbg_args = args.ikp3dbArgs || []
 		const programArgs = args.args || []
 		const interpreterPath = args.pythonPath
+		const spawnCmdList = args.spawnCommand || []
+		const spawnOptions = args.spawnOptions || null
 
-		//"python -m ikp3db {{ikpdbArgs} debuggee.py {args}"
-		let launchArgs = ['-m', 'ikp3db', '--ikpdb-protocol=vscode'].concat(dbg_args).concat(args.program).concat(programArgs);
-		this._debug_server_process = spawn(interpreterPath, launchArgs, { cwd: cwd })
+		if(spawnCmdList.length) {
+			let spawnCmd = spawnCmdList.join(' ')
+			spawnOptions["shell"] = true
+			//spawnArgs["stdio"] = 'inherit'
+			console.debug("Launching: "+spawnCmd)
+			this._debug_server_process = spawn(spawnCmd, spawnOptions)
+
+		} else {
+			//"python -m ikp3db {{ikpdbArgs} debuggee.py {args}"
+			let launchArgs = ['-m', 'ikp3db', '--ikpdb-protocol=vscode'].concat(dbg_args).concat(args.program).concat(programArgs);
+			this._debug_server_process = spawn(
+				interpreterPath,
+				launchArgs,
+				{
+					shell: true,
+					cwd: cwd 
+				}
+			)
+		}
+
 		this._debug_client = new Ikp3dbBTCPClient(dbg_port, dbg_host);
-
 		this._debug_client.on_event = (event: Ikp3dbServerEvent) => { this.handleServerEvents(event) };
 		this._debug_client.on_close = () => { };
 		this._debug_client.on_error = (e: any) => { };
 		this._debug_client.on_open = () => {
 			this.sendEvent(new InitializedEvent());
 		};
+
 		this._debug_server_process.stdout.on('data', (data: any) => {
 			this.sendEvent(new OutputEvent(data.toString(), 'stdout'));
 		});
@@ -366,25 +386,17 @@ export class Ikp3dbDebugSession extends DebugSession {
 	protected attachRequest(response: DebugProtocol.AttachResponse, oargs: DebugProtocol.AttachRequestArguments): void {
 		let args = oargs as AttachRequestArguments;
 		this._stopOnEntry = args.stopOnEntry;
-		var sourceRoot = args.sourceRoot;
-
+		let sourceRoot = args.sourceRoot
 		if (typeof (sourceRoot) === "string") {
 			sourceRoot = [sourceRoot];
 		}
-
 		this.setupSourceEnv(sourceRoot);
 
 		this._debug_client = new Ikp3dbBTCPClient(args.port, args.host);
 		this._debug_client.on_event = (event: Ikp3dbServerEvent) => { this.handleServerEvents(event) };
-		this._debug_client.on_close = () => {
-			this.sendEvent(new TerminatedEvent());
-		};
-		this._debug_client.on_error = (e: any) => {
-		};
-
-		this._debug_client.on_open = () => {
-			this.sendEvent(new InitializedEvent());
-		};
+		this._debug_client.on_close = () => { this.sendEvent(new TerminatedEvent()); };
+		this._debug_client.on_error = (e: any) => { };
+		this._debug_client.on_open = () => { this.sendEvent(new InitializedEvent()); };
 		this.sendResponse(response);
 	}
 
