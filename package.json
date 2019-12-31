@@ -91,7 +91,20 @@
 							"cwd": "^\"\\${workspaceFolder}\"",
 							"pythonPath": "^\"\\${config:python.pythonPath}\""
 						}
+					},
+					{
+						"label": "ikp3db: Attach",
+						"description": "A new configuration for attaching to a Python3 program debugged with ikp3db",
+						"body": {
+							"type": "ikp3db",
+							"request": "attach",
+							"name": "Attach (Ikp3db)",
+							"sourceRoot": "^\"\\${workspaceFolder}\"",
+							"host": "127.0.0.1",
+							"port": 15470
+						}
 					}
+
 				],
 				"configurationAttributes": {
 					"launch": {
@@ -165,7 +178,8 @@
 					"attach": {
 						"required": [
 							"host",
-							"port"
+							"port",
+							"sourceRoot"
 						],
 						"properties": {
 							"host": {
