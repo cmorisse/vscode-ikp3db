@@ -18,9 +18,6 @@ While this is a preliminary version, it is stable enough to be used daily.
 * Evaluate Expressions
 * Local Debugging (compatible with VS Code `Remote Development - Remote SSH`)
 * Multi-threaded debugging (see [documentation](documentation/multi_threaded.md))
-
-## Features availables in the debugger but not yet in this extension
-
 * Remote (docker) debugging over TCP
 
 ## Features not available
@@ -72,7 +69,7 @@ IK3db version 1.5 or above must be available in PYTHONPATH (or current
 virtualenv).<br/>To install:
 
     # Preferably in a virtualenv
-    pip install -i https://test.pypi.org/simple ikp3db==1.5.dev003
+    pip install --pre -i https://test.pypi.org/simple ikp3db
 
 Note: ikp3db 1.5 will be hosted on `test pypi` as long as it is under development.
 
@@ -129,6 +126,9 @@ Absolute path (or relative path from cwd) of program to debug.
 
 This extension is Licenced under MIT.
 
+## Documentation
+
+Plugin documentation is [here](documentation/readme.md).
 
 ## Sources and References
 
