@@ -1,5 +1,13 @@
 # Changes Log
 
+## [0.0.6] - 2019-12-31
+
+* DOC: launch and attach configurations.
+* IMP: "attach" configuration snippet.
+* IMP: "advanced" launch configurations.
+
+[0.0.6]: https://github.com/cmorisse/vscode-ikp3db/compare/v0.0.5...v0.0.6
+
 ## [0.0.5] - 2019-12-22
 
 * FIX: vscode "red message box" does not appear when debugger is stopped (breakpoint or exception)
