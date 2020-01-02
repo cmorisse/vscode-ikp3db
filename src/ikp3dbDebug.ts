@@ -353,7 +353,7 @@ export class Ikp3dbDebugSession extends DebugSession {
 				interpreterPath,
 				launchArgs,
 				{
-					shell: true,
+					shell: false,
 					cwd: cwd 
 				}
 			)
