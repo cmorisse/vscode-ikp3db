@@ -2,7 +2,7 @@
 	"name": "ikp3db",
 	"displayName": "ikp3db",
 	"description": "InouK Python 3 DeBugger",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"publisher": "cmorisse",
 	"engines": {
 		"vscode": "^1.39.2",

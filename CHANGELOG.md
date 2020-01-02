@@ -1,5 +1,11 @@
 # Changes Log
 
+## [0.0.7] - 2020-01-02
+
+* FIX: "basic" launch configuration debuggee does not stop
+
+[0.0.7]: https://github.com/cmorisse/vscode-ikp3db/compare/v0.0.6...v0.0.7
+
 ## [0.0.6] - 2019-12-31
 
 * DOC: launch and attach configurations.
