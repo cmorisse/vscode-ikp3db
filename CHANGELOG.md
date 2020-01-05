@@ -1,5 +1,11 @@
 # Changes Log
 
+## [0.0.8] - 2020-01-05
+
+* IMP: Improve Docker support (start, stop) in advanced "launch" configurations.
+
+[0.0.8]: https://github.com/cmorisse/vscode-ikp3db/compare/v0.0.7...v0.0.8
+
 ## [0.0.7] - 2020-01-02
 
 * FIX: "basic" launch configuration debuggee does not stop

@@ -6,11 +6,14 @@ import {
 	InitializedEvent, TerminatedEvent, ContinuedEvent, StoppedEvent, BreakpointEvent, OutputEvent, Event,
 	Thread, StackFrame, Scope, Source, Handles, Breakpoint
 } from 'vscode-debugadapter';
+import { logger, Logger } from 'vscode-debugadapter';
 import { readFileSync, existsSync } from 'fs';
-import { fork, spawn, ChildProcess } from 'child_process';
+import { exec, spawn, ChildProcess } from 'child_process';
+import { kill } from 'process';
 import * as net from 'net';
 import * as path from 'path';
-
+import * as crypto from 'crypto';
+const { Subject } = require('await-notify');
 
 const IKPDB_MAGIC_CODE: string = "LLADpcdtbdpac";
 
@@ -125,7 +128,8 @@ class Ikp3dbBTCPClient {
 	}
 
 	public constructor(port: number, host: string) {
-		console.info("Ikp3dbClient connects to "+host+":"+port)
+		logger.log(`Ikp3dbClient connects to ${host}:${port}`)
+		console.info(`Ikp3dbClient connects to ${host}:${port}`)
 		this._connection = net.connect(port, host);
 		this._connection.on('connect', () => {
 			this.on_connect_();
@@ -231,6 +235,7 @@ export class Ikp3dbDebugSession extends DebugSession {
 
 	private static THREAD_ID = 1;
 	private _debug_server_process: ChildProcess;
+	private _dockerName: string
 	private _debug_client: Ikp3dbClient;
 
 	// maps from sourceFile to array of Breakpoints
@@ -240,6 +245,7 @@ export class Ikp3dbDebugSession extends DebugSession {
 	private _stopOnEntry: boolean;
 	
 	private _variablesHandles = new Handles<Ikp3dbVariablesReference>();
+	private _configurationDone = new Subject();	
 
 	/**
 	 * Creates a new debug adapter that is used for one debug session.
@@ -320,8 +326,39 @@ export class Ikp3dbDebugSession extends DebugSession {
 			}
 		}
 	}
+	/**
+	 * Accept a command line string and returns:
+	 *   - null; if cl is not a docker run
+	 *   - docker container name defined in cl or generate one and inject in cl
+	 * @param spawnCmd child_process.spawn() Command  
+	 */
+	public processDockerCmdLine(spawnCmd:string) {
+		let spawnCmdCmpSpace= spawnCmd.split(' ').filter(e => e)
+		if(spawnCmdCmpSpace[0]=='docker' && spawnCmdCmpSpace[1]=='run') {
+			if(spawnCmd.indexOf('--name=') != -1) {
+				let spawnCmdCmp = spawnCmd.split('=')
+				let nIdx = spawnCmdCmp.indexOf('--name')
+				this._dockerName = spawnCmdCmp[nIdx+1].split(' ')[0]
+	
+			} else if(spawnCmd.indexOf('--name ') != -1) {
+				let nIdx = spawnCmdCmpSpace.indexOf('--name')
+				this._dockerName = spawnCmdCmpSpace[nIdx+1]
+			
+			} else {  // No name inject one
+				this._dockerName = "ikp3db_"+crypto.randomBytes(16).toString("hex")
+				spawnCmdCmpSpace.splice(2, 0, "--name="+this._dockerName);
+				spawnCmd = spawnCmdCmpSpace.join(' ')
+			}
+		}
+		return spawnCmd
+	}
 
-	protected launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments): void {
+	protected async launchRequest(response: DebugProtocol.LaunchResponse, args: LaunchRequestArguments) {
+		//logger.setup(args.trace ? Logger.LogLevel.Verbose : Logger.LogLevel.Stop, false);
+		logger.setup(Logger.LogLevel.Verbose, false)
+		logger.log("launchRequest() started.")
+		console.log("launchRequest() started.")
+
 		this._stopOnEntry = args.stopOnEntry;
 		const cwd = args.cwd ? args.cwd : process.cwd();
 		var sourceRoot = args.sourceRoot ? args.sourceRoot : cwd;
@@ -340,7 +377,8 @@ export class Ikp3dbDebugSession extends DebugSession {
 		const spawnOptions = args.spawnOptions || null
 
 		if(spawnCmdList.length) {
-			let spawnCmd = spawnCmdList.join(' ')
+			let spawnCmd = spawnCmdList.join(' ').trim()
+			spawnCmd = this.processDockerCmdLine(spawnCmd)
 			spawnOptions["shell"] = true
 			//spawnArgs["stdio"] = 'inherit'
 			console.debug("Launching: "+spawnCmd)
@@ -380,6 +418,8 @@ export class Ikp3dbDebugSession extends DebugSession {
 			this.sendEvent(new OutputEvent(`exit status: ${code}\n`));
 			this.sendEvent(new TerminatedEvent());
 		});
+
+		await this._configurationDone.wait(100);
 		this.sendResponse(response);
 	}
 
@@ -400,11 +440,17 @@ export class Ikp3dbDebugSession extends DebugSession {
 		this.sendResponse(response);
 	}
 
+	/**
+	 * Called at the end of the configuration sequence.
+	 * Indicates that all breakpoints etc. have been sent to the DA and that the 'launch' can start.
+	 */
 	protected configurationDoneRequest(response: DebugProtocol.ConfigurationDoneResponse, args: DebugProtocol.ConfigurationDoneArguments): void {
-		this.sendResponse(response);
+		console.log("configurationDoneRequest()");
 		this._debug_client.send("runScript", null, (event: Ikp3dbServerEvent) => {
 			console.debug("Debugged program started.");
 		});
+		super.configurationDoneRequest(response, args);
+		this._configurationDone.notify();
 	}
 
 	protected setBreakPointsRequest(response: DebugProtocol.SetBreakpointsResponse, args: DebugProtocol.SetBreakpointsArguments): void {
@@ -745,14 +791,38 @@ export class Ikp3dbDebugSession extends DebugSession {
 	}
 
 	protected disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments): void {
+		console.log("disconnectRequest() started.")
+		logger.log("disconnectRequest() started.")
+
 		if (this._debug_server_process) {
-			this._debug_server_process.kill('SIGKILL');
-			delete this._debug_server_process;
-			if (this._debug_client) {
-				this._debug_client.end();
-				delete this._debug_client;
+			if(this._dockerName) {
+				exec('docker rm --force ' + this._dockerName, (error, stdout, stderr) => {
+					if (error) {
+						console.error(`Failed to rm docker:${this._dockerName} with exec error: ${error}`)
+						logger.log(`Failed to rm docker:${this._dockerName} with exec error: ${error}`, Logger.LogLevel.Error)
+					}
+					console.log(`Removed docker: ${stdout}`)
+					logger.log(`Removed docker: ${stdout}`, Logger.LogLevel.Log)
+					if(stderr) console.error(`Errors: ${stderr}`);
+
+					delete this._debug_server_process
+					if (this._debug_client) {
+						this._debug_client.end()
+						delete this._debug_client
+					}					
+					this.sendResponse(response)
+				})
+	
+			} else {
+				//process.kill( this._debug_server_process.pid, 'SIGKILL')
+				this._debug_server_process.kill('SIGKILL');
+				delete this._debug_server_process
+				if (this._debug_client) {
+					this._debug_client.end()
+					delete this._debug_client
+				}
+				this.sendResponse(response)
 			}
-			this.sendResponse(response);
 		}
 	}
 

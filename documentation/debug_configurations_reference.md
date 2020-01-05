@@ -25,15 +25,15 @@ Here is an example of advanced 'launch' configuration.
     {
         "type": "ikp3db",
         "request": "launch",
-        "name": "In docker",
+        "name": "docker launch (advanced)",
         "spawnCommand": [
             "docker run -i",
             "-p 10069:8069 -p 8072:8072 -p 15470:15470",
-            "-v /Users/cmorisse/dev-oursbleu/appserver-boken/datadir:/var/lib/odoo",
-            "-v /Users/cmorisse/dev-oursbleu/appserver-boken/parts:/opt/appserver/parts",
-            "-v /Users/cmorisse/dev-oursbleu/appserver--boken/project_addons:/opt/appserver/project_addons",
-            "-v /Users/cmorisse/dev-oursbleu/appserver--boken/etc:/opt/appserver/etc",
-            "-e IKP3DB_ARGS='--ikpdb-protocol=vscode --ikpdb-address=0.0.0.0 -ik_ccwd=/Users/cmorisse/dev-oursbleu/appserver-xsid -ik_cwd=/opt/appserver --ikpdb-log=9pPg'",
+            "-v ${workspaceFolder}/datadir:/var/lib/odoo",
+            "-v ${workspaceFolder}/parts:/opt/appserver/parts",
+            "-v ${workspaceFolder}/project_addons:/opt/appserver/project_addons",
+            "-v ${workspaceFolder}/etc:/opt/appserver/etc",
+            "-e IKP3DB_ARGS='--ikpdb-protocol=vscode --ikpdb-address=0.0.0.0 -ik_ccwd=${workspaceFolder} -ik_cwd=/opt/appserver --ikpdb-log=9pPg'",
             "-e PGHOST=docker.for.mac.host.internal",
             "inouk-odoo-dev:v12",
             "ikp3db"
@@ -49,6 +49,19 @@ As you can see, **advanced** configurations use only 2 options:
 both options are passed to nodejs api [child_process.spawn()](https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options).
 
 Note that the plugin forces the option shell so we don't use `args`.
+
+### Special notes about 'Docker'
+
+Ikp3db analyses `spawnCommand` to check wether it's a "docker run" command. In that
+case it searches for a `--name` argument. <br/>
+If `--name` is found then the container name is used to emit a `docker rm --force ${name}` when you stop debugging (by 
+clicking on the red square). <br/>
+If none is found then ikp3db injects a `--name=ikp3db_{{aRandomNumber}}` in 
+the spawnCommand and use this name to emit a `docker rm --force ikp3db_{{aRandomNumber}}`
+ when you stop debugging.
+ 
+ If this behaviour does not suit you or you want a total control over your container lifecycle, you should use an "attach" configuration.
+
 
 ## "attach" configurations
 

@@ -2,7 +2,7 @@
 	"name": "ikp3db",
 	"displayName": "ikp3db",
 	"description": "InouK Python 3 DeBugger",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"publisher": "cmorisse",
 	"engines": {
 		"vscode": "^1.39.2",
@@ -12,6 +12,7 @@
 		"Debuggers"
 	],
 	"dependencies": {
+		"await-notify": "^1.0.1",
 		"vscode-debugadapter": "1.37.0",
 		"vscode-debugprotocol": "1.37.0",
 		"vscode-nls": "2.0.2"
@@ -20,14 +21,14 @@
 		"@types/vscode": "^1.39"
 	},
 	"devDependencies": {
-		"@types/node": "12.11.5",
 		"@types/mocha": "5.2.7",
-		"typescript": "3.5.3",
-		"vscode": "1.1.36",
+		"@types/node": "12.11.5",
 		"mocha": "6.2.0",
-		"vscode-debugadapter-testsupport": "1.37.0",
 		"tslint": "5.18.0",
-		"vsce": "1.69.0",
+		"typescript": "3.5.3",
+		"vsce": "^1.69.0",
+		"vscode": "1.1.36",
+		"vscode-debugadapter-testsupport": "1.37.0",
 		"vscode-nls-dev": "3.3.1"
 	},
 	"activationEvents": [
@@ -104,7 +105,6 @@
 							"port": 15470
 						}
 					}
-
 				],
 				"configurationAttributes": {
 					"launch": {
