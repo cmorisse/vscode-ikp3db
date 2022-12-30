@@ -23,7 +23,7 @@
 	"devDependencies": {
 		"@types/mocha": "5.2.7",
 		"@types/node": "12.11.5",
-		"mocha": "6.2.0",
+		"mocha": "10.2.0",
 		"tslint": "5.18.0",
 		"typescript": "3.5.3",
 		"vsce": "^1.69.0",
